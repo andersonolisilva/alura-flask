@@ -23,13 +23,18 @@ def index():
     lista = jogo_dao.listar()
     return render_template('lista.html', titulo='Jogos', jogos=lista)
 
-
 @app.route('/novo')
 def novo():
     if 'usuario_logado' not in session or session['usuario_logado'] == None:
         return redirect(url_for('login', proxima=url_for('novo')))
     return render_template('novo.html', titulo='Novo Jogo')
 
+@app.route('/editar/<int:id>')
+def editar(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        return redirect(url_for('login', proxima=url_for('editar')))
+    jogo = jogo_dao.busca_por_id(id)
+    return render_template('editar.html', titulo='Editando Jogo', jogo=jogo)
 
 @app.route('/criar', methods=['POST',])
 def criar():
@@ -40,6 +45,24 @@ def criar():
     jogo_dao.salvar(jogo)
     return redirect(url_for('index'))
 
+@app.route('/atualizar', methods=['POST',])
+def atualizar():
+    nome = request.form['nome']
+    categoria = request.form['categoria']
+    console = request.form['console']
+    id = request.form['id']
+    jogo = Jogo(nome, categoria, console, id)
+    jogo_dao.salvar(jogo)
+    return redirect(url_for('index'))
+
+@app.route('/deletar/<int:id>')
+def deletar(id):
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        return redirect( url_for('login', proxima=url_for('deletar')))
+
+    jogo_dao.deletar(id)
+    flash('Jogo apagado do sistema.')
+    return redirect(url_for('index'))
 
 @app.route('/login')
 def login():
